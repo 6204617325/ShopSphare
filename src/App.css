@@ -1,0 +1,59 @@
+.dashboard {
+  max-width: 700px;
+  margin: 50px auto;
+  padding: 30px;
+}
+
+.dashboard h1 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.dashboard h2 {
+  margin-bottom: 30px;
+}
+
+.dashboard-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 12px;
+  background: crimson;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.logout-btn:hover {
+  background: darkred;
+}
+
+/* Navebar ka css hai  */
+.navbar{
+    height:70px;
+}
+
+.navbar-brand{
+    min-width:220px;
+}
+
+.form-control{
+    height:45px;
+}
+
+.dropdown-toggle::after{
+    margin-left:10px;
+}
