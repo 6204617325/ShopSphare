@@ -57,3 +57,78 @@
 .dropdown-toggle::after{
     margin-left:10px;
 }
+
+/* Footer ki css hai */
+.footer-link {
+  color: #adb5bd;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.footer-link:hover {
+  color: #ffffff;
+  padding-left: 4px;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #6c757d;
+  border-radius: 50%;
+
+  color: #adb5bd;
+  text-decoration: none;
+
+  transition: all 0.2s ease;
+}
+
+.social-icon:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+  transform: translateY(-3px);
+}
+
+/* =========================
+   Home Page
+========================= */
+
+body {
+  margin: 0;
+  background: #f8f9fa;
+}
+
+main {
+  overflow-x: hidden;
+}
+
+/* Product section heading */
+
+.home-section-title {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* Smooth cards */
+
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Responsive spacing */
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

@@ -97,10 +97,12 @@ function Navbar({ search, setSearch, cart, wishlist }) {
 
 
           {/* User */}
-          <FaUserCircle
-            size={28}
-            style={{ cursor: "pointer" }}
-          />
+          <Link
+            to="/profile"
+            className="text-dark text-decoration-none"
+          >
+            <FaUserCircle size={28} />
+          </Link>
 
         </div>
 

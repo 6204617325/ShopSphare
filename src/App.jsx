@@ -11,6 +11,8 @@ import Orders from "./pages/Orders";
 import OrderSuccess from "./pages/OrderSuccess";
 import Dashboard from "./pages/Dashboard";
 import OrderDetails from "./pages/OrderDetails";
+import Profile from "./pages/Profile";
+
 
 function App() {
   const [cart, setCart] = useState(() => {
@@ -62,11 +64,14 @@ function App() {
         <Route path="/payment" element={<Payment />} />
 
         <Route path="/orders" element={<Orders />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/order-details/:orderId" element={<OrderDetails />} />
         <Route path="/order-success" element={<OrderSuccess />} />
 
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
+
+      
     </BrowserRouter>
   );
 }
