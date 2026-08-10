@@ -5,13 +5,17 @@ import HeroBanner from "../components/HeroBanner";
 import DealsSection from "../components/DealsSection";
 import Footer from "../components/Footer";
 import CategoryBar from "../components/CategoryBar";
+import ProductDetails from "../components/ProductDetails";
 
 function Home({ cart, setCart }) {
   const [wishlist, setWishlist] = useState([]);
   const [search, setSearch] = useState("");
+  const [selectedProduct, setSelectedProduct] =
+    useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="home-page">
 
       {/* Navbar */}
       <Navbar
@@ -21,43 +25,60 @@ function Home({ cart, setCart }) {
         wishlist={wishlist}
       />
 
-      {/* Category Navigation */}
-      <CategoryBar />
+      {/* Categories */}
+       <CategoryBar
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
 
-      {/* Main Home Content */}
       <main>
 
-        {/* Hero Section */}
-        <section className="container-fluid px-0">
+        {/* Hero */}
+        <section>
           <HeroBanner />
         </section>
 
-        {/* Products / Deals */}
+        {/* Products */}
         <section className="container py-5">
 
           <div className="text-center mb-4">
+
             <h2 className="fw-bold mb-2">
               🛍️ Explore Our Products
             </h2>
 
-            <p className="text-muted mb-0">
+            <p className="text-muted">
               Discover the best deals and latest products
             </p>
+
           </div>
 
           <DealsSection
             search={search}
+            selectedCategory={selectedCategory}
             cart={cart}
             setCart={setCart}
             wishlist={wishlist}
             setWishlist={setWishlist}
+            setSelectedProduct={setSelectedProduct}
           />
+
+          {/* Product Details */}
+          {selectedProduct && (
+            <ProductDetails
+              product={selectedProduct}
+              cart={cart}
+              setCart={setCart}
+              wishlist={wishlist}
+              setWishlist={setWishlist}
+            />
+          )}
 
         </section>
 
       </main>
 
-      {/* Footer - Only Home Page */}
+      {/* Footer */}
       <Footer />
 
     </div>

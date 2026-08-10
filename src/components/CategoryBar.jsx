@@ -1,6 +1,9 @@
-function CategoryBar() {
-
+function CategoryBar({
+  selectedCategory,
+  setSelectedCategory,
+}) {
   const categories = [
+    "All",
     "Home",
     "Mobiles",
     "Electronics",
@@ -8,29 +11,36 @@ function CategoryBar() {
     "Beauty",
     "Furniture",
     "Grocery",
-    "Sports"
+    "Sports",
   ];
 
   return (
+    <div className="category-bar">
+      <div className="category-container">
+        {categories.map((category, index) => (
+          <div
+            key={category}
+            className="category-item"
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedCategory(category)}
+              className={
+                selectedCategory === category
+                  ? "category-button active"
+                  : "category-button"
+              }
+            >
+              {category}
+            </button>
 
-    <div className="d-flex justify-content-center gap-5 py-3 bg-light shadow-sm">
-
-      {categories.map((item) => (
-
-        <span
-          key={item}
-          style={{
-            cursor: "pointer",
-            fontWeight: "600"
-          }}
-        >
-          {item}
-        </span>
-
-      ))}
-
+            {index < categories.length - 1 && (
+              <span className="category-divider">|</span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-
   );
 }
 
