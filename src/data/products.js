@@ -13,7 +13,7 @@ const products = [
     title: "iPhone 15 Pro",
     price: 129999,
     oldPrice: 139999,
-    category: "Electronics",
+    category: "Mobiles",
     image: iphone,
     description:
       "Premium smartphone with powerful performance and an advanced camera system.",
@@ -49,7 +49,7 @@ const products = [
     title: "Running Shoes",
     price: 2499,
     oldPrice: 3999,
-    category: "Shoes",
+    category: "Sports",
     image: shoes,
     description:
       "Lightweight running shoes designed for comfort and everyday activities.",
@@ -61,7 +61,7 @@ const products = [
     title: "Samsung Galaxy S24",
     price: 64999,
     oldPrice: 71999,
-    category: "Electronics",
+    category: "Mobiles",
     image:
       "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=80",
     description:
@@ -225,7 +225,7 @@ const products = [
     title: "Nike Air Running Shoes",
     price: 4999,
     oldPrice: 6499,
-    category: "Shoes",
+    category: "Sports",
     image:
       "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
     description:
@@ -238,7 +238,7 @@ const products = [
     title: "Adidas Sports Sneakers",
     price: 3999,
     oldPrice: 5499,
-    category: "Shoes",
+    category: "Sports",
     image:
       "https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=600&q=80",
     description:
@@ -251,7 +251,7 @@ const products = [
     title: "Men's Casual Sneakers",
     price: 2199,
     oldPrice: 2999,
-    category: "Shoes",
+    category: "Sports",
     image:
       "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=600&q=80",
     description:
@@ -264,7 +264,7 @@ const products = [
     title: "Women's Running Shoes",
     price: 3299,
     oldPrice: 4499,
-    category: "Shoes",
+    category: "Sports",
     image:
       "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
     description:

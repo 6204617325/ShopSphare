@@ -10,13 +10,18 @@ import ForgetPassword from "../components/ForgetPassword";
 import Logo from "../components/Logo";
 import Divider from "../components/Divider";
 import SocialButton from "../components/SocialButton";
+
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaLinkedin } from "react-icons/fa6";
+
 import { useNavigate } from "react-router-dom";
 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 function Login() {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -34,13 +39,13 @@ function Login() {
     }
   }, []);
 
-  function handleLogin() {
+  async function handleLogin() {
     let valid = true;
 
     setEmailError("");
     setPasswordError("");
 
-    // Email Validation
+    // Email validation
     if (email.trim() === "") {
       setEmailError("Email is required");
       valid = false;
@@ -49,24 +54,49 @@ function Login() {
       valid = false;
     }
 
-    // Password Validation
+    // Password validation
     if (password.trim() === "") {
       setPasswordError("Password is required");
       valid = false;
     }
 
-    if (!valid) return;
-
-    if (rememberMe) {
-      localStorage.setItem("email", email);
-    } else {
-      localStorage.removeItem("email");
+    if (!valid) {
+      return;
     }
 
-    alert("Login Successful 🎉");
-    console.log("Email:", email);
-    console.log("Password:", password);
-    navigate("/home");
+    try {
+      setLoading(true);
+
+      await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+      if (rememberMe) {
+        localStorage.setItem("email", email.trim());
+      } else {
+        localStorage.removeItem("email");
+      }
+
+      alert("Login Successful 🎉");
+
+      navigate("/home");
+    } catch (error) {
+      console.error("Firebase Login Error:", error);
+
+      if (
+        error.code === "auth/invalid-credential" ||
+        error.code === "auth/user-not-found" ||
+        error.code === "auth/wrong-password"
+      ) {
+        setPasswordError("Invalid email or password");
+      } else {
+        setPasswordError("Login failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -96,7 +126,7 @@ function Login() {
       <Button
         text={loading ? "Loading..." : "Login"}
         onClick={handleLogin}
-        disabled={!email || !password}
+        disabled={!email || !password || loading}
       />
 
       <Divider />

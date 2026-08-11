@@ -12,7 +12,7 @@ import OrderSuccess from "./pages/OrderSuccess";
 import Dashboard from "./pages/Dashboard";
 import OrderDetails from "./pages/OrderDetails";
 import Profile from "./pages/Profile";
-
+import firebase from "firebase/compat/app";
 
 function App() {
   const [cart, setCart] = useState(() => {

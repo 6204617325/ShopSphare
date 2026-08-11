@@ -267,7 +267,7 @@ const handlePayment = () => {
                 />
 
                 <h5 className="text-primary mt-3">
-                  abhay123@oksbi
+                  6204617325@ybl
                 </h5>
 
                 <h3 className="text-success mt-3">
