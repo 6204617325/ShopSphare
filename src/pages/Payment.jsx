@@ -5,6 +5,13 @@ import {
   FaCreditCard,
   FaMobileAlt,
 } from "react-icons/fa";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+
+import { auth, db } from "../firebase";
 
 import upi from "../assets/products/upi.png";
 
@@ -40,52 +47,98 @@ function Payment() {
   }, [seconds, paymentMethod]);
 
   // Payment complete
-const handlePayment = () => {
+const handlePayment = async () => {
+  try {
+    const currentUser = auth.currentUser;
 
-  const orderId =
-    localStorage.getItem("orderId") ||
-    "SP" + Date.now().toString().slice(-8);
+    if (!currentUser) {
+      alert("Please login first 🔐");
+      navigate("/");
+      return;
+    }
 
-  const customerName =
-    localStorage.getItem("customerName") ||
-    "Customer";
+    const cartItems =
+      JSON.parse(localStorage.getItem("cart")) || [];
 
-  const savedPaymentMethod =
-    localStorage.getItem("paymentMethod") ||
-    paymentMethod;
+    if (cartItems.length === 0) {
+      alert("Your cart is empty 🛒");
+      navigate("/cart");
+      return;
+    }
 
-  const cartItems =
-    JSON.parse(localStorage.getItem("cart")) || [];
+    const customerName =
+      localStorage.getItem("customerName") ||
+      currentUser.displayName ||
+      "Customer";
 
-  const cartTotal =
-    Number(localStorage.getItem("cartTotal")) || 0;
+    const savedPaymentMethod =
+      localStorage.getItem("paymentMethod") ||
+      paymentMethod;
 
-  const newOrder = {
-    orderId,
-    customerName,
-    paymentMethod: savedPaymentMethod,
-    date: new Date().toLocaleDateString(),
-    status: "Confirmed",
-    items: cartItems,
-    total: cartTotal,
-  };
+    const orderData = {
+      userId: currentUser.uid,
 
-  const existingOrders =
-    JSON.parse(localStorage.getItem("orders")) || [];
+      customerName: customerName,
 
-  const updatedOrders = [
-    ...existingOrders,
-    newOrder,
-  ];
+      email: currentUser.email || "",
 
-  localStorage.setItem(
-    "orders",
-    JSON.stringify(updatedOrders)
-  );
+      paymentMethod: savedPaymentMethod,
 
-  alert("Payment Successful 🎉");
+      items: cartItems,
 
-  navigate("/order-success");
+      total: totalPrice,
+
+      status: "Confirmed",
+
+      date: new Date().toLocaleDateString("en-IN"),
+
+      createdAt: serverTimestamp(),
+    };
+
+    // 🔥 Save order to Firestore
+    const orderRef = await addDoc(
+      collection(db, "orders"),
+      orderData
+    );
+
+    console.log(
+      "Order saved to Firebase:",
+      orderRef.id
+    );
+
+    // LocalStorage orderId for Order Success page
+    localStorage.setItem(
+      "orderId",
+      orderRef.id
+    );
+
+    // Optional local copy
+    localStorage.setItem(
+      "lastOrder",
+      JSON.stringify({
+        ...orderData,
+        orderId: orderRef.id,
+      })
+    );
+
+    // Cart clear
+    localStorage.removeItem("cart");
+    localStorage.removeItem("cartTotal");
+
+    alert("Payment Successful 🎉");
+
+    navigate("/order-success");
+
+  } catch (error) {
+    console.error(
+      "Firebase Order Save Error:",
+      error
+    );
+
+    alert(
+      `Order save nahi ho paya ❌\n${error.code || ""}`
+    );
+  }
 };
 
   return (
@@ -293,7 +346,7 @@ const handlePayment = () => {
                   className="btn btn-success btn-lg w-100"
                   onClick={handlePayment}
                 >
-                  I Have Paid
+                  Place Order
                 </button>
 
               </div>

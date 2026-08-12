@@ -13,10 +13,15 @@ import SocialButton from "../components/SocialButton";
 
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaLinkedin } from "react-icons/fa6";
-
 import { useNavigate } from "react-router-dom";
-
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
 import { auth } from "../firebase";
 
 function Login() {
@@ -98,6 +103,84 @@ function Login() {
       setLoading(false);
     }
   }
+async function handleGoogleLogin() {
+  try {
+    setLoading(true);
+
+    const provider = new GoogleAuthProvider();
+
+    const result = await signInWithPopup(auth, provider);
+
+    const user = result.user;
+    await setDoc(
+  doc(db, "users", user.uid),
+  {
+    uid: user.uid,
+    name: user.displayName || "",
+    email: user.email || "",
+    photoURL: user.photoURL || "",
+    provider: "google",
+    updatedAt: serverTimestamp(),
+  },
+  { merge: true }
+);
+
+navigate("/home");
+
+    console.log("Google User:", user);
+    console.log("Name:", user.displayName);
+    console.log("Email:", user.email);
+    console.log("Photo:", user.photoURL);
+
+    alert(`Welcome ${user.displayName} 🎉`);
+
+    navigate("/home");
+  } catch (error) {
+    console.error("Google Login Error:", error);
+
+    alert(error.message);
+  } finally {
+    setLoading(false);
+  }
+}
+async function handleGithubLogin() {
+  try {
+    setLoading(true);
+
+    const provider = new GithubAuthProvider();
+
+    const result = await signInWithPopup(auth, provider);
+
+    const user = result.user;
+    await setDoc(
+  doc(db, "users", user.uid),
+  {
+    uid: user.uid,
+    name: user.displayName || "",
+    email: user.email || "",
+    photoURL: user.photoURL || "",
+    provider: "github",
+    updatedAt: serverTimestamp(),
+  },
+  { merge: true }
+);
+
+    console.log("GitHub User:", user);
+    console.log("Name:", user.displayName);
+    console.log("Email:", user.email);
+    console.log("Photo:", user.photoURL);
+
+    alert(`Welcome ${user.displayName || "User"} 🎉`);
+
+    navigate("/home");
+  } catch (error) {
+    console.error("GitHub Login Error:", error);
+
+    alert(error.message);
+  } finally {
+    setLoading(false);
+  }
+}
 
   return (
     <div>
@@ -132,13 +215,15 @@ function Login() {
       <Divider />
 
       <SocialButton
-        text="Continue with Google"
+        text={loading ? "Signing in..." : "Continue with Google"}
         icon={<FcGoogle />}
+        onClick={handleGoogleLogin}
       />
 
       <SocialButton
         text="Continue with GitHub"
         icon={<FaGithub />}
+        onClick={handleGithubLogin}
       />
 
       <SocialButton

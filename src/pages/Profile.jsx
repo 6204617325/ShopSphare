@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 function Profile() {
   const navigate = useNavigate();
 
@@ -25,13 +26,44 @@ function Profile() {
     });
   };
 
-  const handleSave = () => {
+ const handleSave = async () => {
+  try {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      alert("Please login first 🔐");
+      navigate("/");
+      return;
+    }
+
+    await setDoc(
+      doc(db, "users", currentUser.uid),
+      {
+        uid: currentUser.uid,
+        fullName: user.fullName,
+        email: currentUser.email,
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        state: user.state,
+        pincode: user.pincode,
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    // LocalStorage bhi rakhenge
     localStorage.setItem("user", JSON.stringify(user));
 
     alert("Profile Updated Successfully 🎉");
 
     setEditing(false);
-  };
+  } catch (error) {
+    console.error("Profile Save Error:", error);
+
+    alert("Profile save nahi ho paya ❌");
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");

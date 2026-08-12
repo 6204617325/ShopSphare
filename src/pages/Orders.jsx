@@ -1,46 +1,76 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+
+import { auth, db } from "../firebase";
 
 function Orders() {
-  const [orders, setOrders] = useState(
-    JSON.parse(localStorage.getItem("orders")) || []
-  );
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // =========================
-  // Update Order Status
+  // LOAD USER ORDERS FROM FIRESTORE
   // =========================
-  const updateStatus = (orderId) => {
-    const updatedOrders = orders.map((order) => {
-      if (order.orderId !== orderId) {
-        return order;
+  useEffect(() => {
+    const unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
+      if (!currentUser) {
+        setOrders([]);
+        setLoading(false);
+        return;
       }
 
-      let newStatus = order.status;
+      const ordersQuery = query(
+        collection(db, "orders"),
+        where("userId", "==", currentUser.uid)
+      );
 
-      if (order.status === "Confirmed") {
-        newStatus = "Shipped";
-      } else if (order.status === "Shipped") {
-        newStatus = "Delivered";
-      }
+      const unsubscribeOrders = onSnapshot(
+        ordersQuery,
+        (snapshot) => {
+          const firebaseOrders = snapshot.docs.map((orderDoc) => ({
+            orderId: orderDoc.id,
+            ...orderDoc.data(),
+          }));
 
-      return {
-        ...order,
-        status: newStatus,
-      };
+          // Latest orders first
+          firebaseOrders.sort((a, b) => {
+            const dateA = a.createdAt?.toMillis
+              ? a.createdAt.toMillis()
+              : 0;
+
+            const dateB = b.createdAt?.toMillis
+              ? b.createdAt.toMillis()
+              : 0;
+
+            return dateB - dateA;
+          });
+
+          setOrders(firebaseOrders);
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Error loading orders from Firebase:", error);
+          setLoading(false);
+        }
+      );
+
+      return unsubscribeOrders;
     });
 
-    setOrders(updatedOrders);
-
-    localStorage.setItem(
-      "orders",
-      JSON.stringify(updatedOrders)
-    );
-  };
+    return () => unsubscribeAuth();
+  }, []);
 
   // =========================
-  // Cancel Order
+  // CANCEL ORDER
   // =========================
-  const cancelOrder = (orderId) => {
+  const cancelOrder = async (orderId) => {
     const confirmCancel = window.confirm(
       "Are you sure you want to cancel this order?"
     );
@@ -49,45 +79,64 @@ function Orders() {
       return;
     }
 
-    const updatedOrders = orders.map((order) => {
-      if (order.orderId === orderId) {
-        return {
-          ...order,
-          status: "Cancelled",
-        };
+    try {
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) {
+        alert("Please login first 🔐");
+        return;
       }
 
-      return order;
-    });
+      await updateDoc(doc(db, "orders", orderId), {
+        status: "Cancelled",
+      });
 
-    setOrders(updatedOrders);
-
-    localStorage.setItem(
-      "orders",
-      JSON.stringify(updatedOrders)
-    );
+      alert("Order cancelled successfully ❌");
+    } catch (error) {
+      console.error("Cancel Order Error:", error);
+      alert("Order cancel nahi ho paya ❌");
+    }
   };
 
   // =========================
-  // Status Button Text
+  // STATUS TEXT
   // =========================
-  const getNextStatus = (status) => {
+  const getStatusClass = (status) => {
     if (status === "Confirmed") {
-      return "Mark as Shipped";
+      return "badge bg-success";
     }
 
     if (status === "Shipped") {
-      return "Mark as Delivered";
+      return "badge bg-primary";
     }
 
-    return "";
+    if (status === "Delivered") {
+      return "badge bg-success";
+    }
+
+    if (status === "Cancelled") {
+      return "badge bg-danger";
+    }
+
+    return "badge bg-secondary";
   };
+
+  // =========================
+  // LOADING
+  // =========================
+  if (loading) {
+    return (
+      <div className="container my-5 text-center">
+        <div className="spinner-border text-primary" />
+        <p className="mt-3">Loading your orders...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container my-5">
 
       {/* ================= HEADER ================= */}
-
       <div className="d-flex justify-content-between align-items-center mb-4">
 
         <div>
@@ -109,9 +158,7 @@ function Orders() {
 
       </div>
 
-
       {/* ================= NO ORDERS ================= */}
-
       {orders.length === 0 ? (
 
         <div className="text-center mt-5">
@@ -136,7 +183,6 @@ function Orders() {
       ) : (
 
         /* ================= ORDERS ================= */
-
         orders.map((order) => (
 
           <div
@@ -145,72 +191,52 @@ function Orders() {
           >
 
             {/* ================= ORDER HEADER ================= */}
+            <div className="card-header">
 
-            <div className="card-header d-flex justify-content-between align-items-center">
+              <div className="d-flex justify-content-between align-items-center">
 
-              <div>
+                <div>
+                  <strong>
+                    Order ID:
+                  </strong>
 
-                <strong>
-                  Order ID:
-                </strong>
+                  <span className="text-primary ms-2">
+                    #{order.orderId}
+                  </span>
+                </div>
 
-                <span className="text-primary ms-2">
-                  #{order.orderId}
-                </span>
+                <div className="d-flex align-items-center gap-2">
 
-            </div>
-            <div className="d-flex align-items-center gap-3">
+                  <span className={getStatusClass(order.status)}>
+                    {order.status || "Pending"}
+                  </span>
 
-                <span className="text-success fw-bold">
-                   {order.status}
-                </span>
-           
-                <Link
-                   to={`/order-details/${order.orderId}`}
-                   className="btn btn-primary btn-sm"
-                >
-                   View Details
-                </Link>
-           
-            </div>
+                  <Link
+                    to={`/order-details/${order.orderId}`}
+                    className="btn btn-primary btn-sm"
+                  >
+                    View Details
+                  </Link>
 
+                </div>
 
-              {/* STATUS */}
-
-              <span
-                className={
-                  order.status === "Confirmed"
-                    ? "badge bg-success"
-                    : order.status === "Shipped"
-                    ? "badge bg-primary"
-                    : order.status === "Delivered"
-                    ? "badge bg-success"
-                    : "badge bg-danger"
-                }
-              >
-                {order.status}
-              </span>
+              </div>
 
             </div>
-
 
             {/* ================= ORDER BODY ================= */}
-
             <div className="card-body">
 
               <div className="row">
 
-
                 {/* ================= PRODUCTS ================= */}
-
                 <div className="col-md-8">
 
                   <h5 className="mb-3">
                     Products
                   </h5>
 
-
-                  {order.items.map((item) => (
+                  {order.items?.map((item) => (
 
                     <div
                       key={item.id}
@@ -227,7 +253,6 @@ function Orders() {
                         }}
                         className="me-3"
                       />
-
 
                       <div>
 
@@ -251,9 +276,7 @@ function Orders() {
 
                 </div>
 
-
                 {/* ================= ORDER DETAILS ================= */}
-
                 <div className="col-md-4">
 
                   <div className="card bg-light p-3">
@@ -264,33 +287,28 @@ function Orders() {
 
                     <hr />
 
-
                     <p>
                       <strong>Date:</strong>
                       <br />
-                      {order.date}
+                      {order.date || "N/A"}
                     </p>
-
 
                     <p>
                       <strong>Payment:</strong>
                       <br />
-                      {order.paymentMethod}
+                      {order.paymentMethod || "N/A"}
                     </p>
-
 
                     <p>
                       <strong>Customer:</strong>
                       <br />
-                      {order.customerName}
+                      {order.customerName || "N/A"}
                     </p>
-
 
                     <hr />
 
-
                     <h5 className="text-success">
-                      Total: ₹{order.total}
+                      Total: ₹{order.total || 0}
                     </h5>
 
                   </div>
@@ -299,9 +317,7 @@ function Orders() {
 
               </div>
 
-
               {/* ================= ORDER STATUS ================= */}
-
               <hr />
 
               <div className="mt-3">
@@ -310,11 +326,9 @@ function Orders() {
                   Order Status
                 </h5>
 
-
-                {/* STATUS STEPS */}
-
                 <div className="d-flex justify-content-between text-center mt-4">
 
+                  {/* CONFIRMED */}
                   <div>
 
                     <div
@@ -335,7 +349,7 @@ function Orders() {
 
                   </div>
 
-
+                  {/* SHIPPED */}
                   <div>
 
                     <div
@@ -355,7 +369,7 @@ function Orders() {
 
                   </div>
 
-
+                  {/* DELIVERED */}
                   <div>
 
                     <div
@@ -376,32 +390,11 @@ function Orders() {
 
                 </div>
 
+                {/* ================= CANCEL BUTTON ================= */}
+                {order.status !== "Delivered" &&
+                  order.status !== "Cancelled" && (
 
-                {/* ================= BUTTONS ================= */}
-
-                <div className="d-flex gap-2 mt-4">
-
-                  {/* NEXT STATUS */}
-
-                  {order.status !== "Delivered" &&
-                    order.status !== "Cancelled" && (
-
-                      <button
-                        className="btn btn-primary"
-                        onClick={() =>
-                          updateStatus(order.orderId)
-                        }
-                      >
-                        {getNextStatus(order.status)}
-                      </button>
-
-                    )}
-
-
-                  {/* CANCEL */}
-
-                  {order.status !== "Delivered" &&
-                    order.status !== "Cancelled" && (
+                    <div className="mt-4">
 
                       <button
                         className="btn btn-outline-danger"
@@ -412,32 +405,24 @@ function Orders() {
                         ❌ Cancel Order
                       </button>
 
-                    )}
+                    </div>
 
-                </div>
-
+                  )}
 
                 {/* CANCELLED MESSAGE */}
-
                 {order.status === "Cancelled" && (
 
                   <div className="alert alert-danger mt-3 mb-0">
-
                     ❌ This order has been cancelled.
-
                   </div>
 
                 )}
 
-
                 {/* DELIVERED MESSAGE */}
-
                 {order.status === "Delivered" && (
 
                   <div className="alert alert-success mt-3 mb-0">
-
                     🎉 Your order has been delivered successfully!
-
                   </div>
 
                 )}
