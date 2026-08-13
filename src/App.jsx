@@ -6,7 +6,7 @@ import {
   getDoc,
   setDoc,
 } from "firebase/firestore";
-
+import AdminDashboard from "./pages/AdminDashboard";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Cart from "./pages/Cart";
@@ -18,7 +18,7 @@ import OrderSuccess from "./pages/OrderSuccess";
 import Dashboard from "./pages/Dashboard";
 import OrderDetails from "./pages/OrderDetails";
 import Profile from "./pages/Profile";
-
+import AdminRoute from "./components/AdminRoute";
 import { auth, db } from "./firebase";
 
 function App() {
@@ -307,6 +307,14 @@ function App() {
         <Route
           path="/dashboard"
           element={<Dashboard />}
+        />
+        <Route
+        path="/admin"
+        element={
+        <AdminRoute>
+          <AdminDashboard/>
+        </AdminRoute>
+        }
         />
 
       </Routes>

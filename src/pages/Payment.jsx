@@ -1,40 +1,50 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import {
   FaMoneyBillWave,
   FaCreditCard,
   FaMobileAlt,
 } from "react-icons/fa";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-
-import { auth, db } from "../firebase";
 
 import upi from "../assets/products/upi.png";
+
+import { auth, db } from "../firebase";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 
 function Payment() {
   const navigate = useNavigate();
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [seconds, setSeconds] = useState(300);
+  const [loading, setLoading] = useState(false);
 
-  // Cart se total lena
+  // ================================
+  // CART
+  // ================================
+
   const cart =
     JSON.parse(localStorage.getItem("cart")) || [];
 
   const totalPrice = cart.reduce(
     (total, item) =>
-      total + Number(item.price) * Number(item.quantity || 1),
+      total +
+      Number(item.price) *
+        Number(item.quantity || 1),
     0
   );
 
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
 
-  // 5 minute timer
+  // ================================
+  // UPI TIMER
+  // ================================
+
   useEffect(() => {
     if (paymentMethod !== "UPI") return;
     if (seconds <= 0) return;
@@ -46,105 +56,170 @@ function Payment() {
     return () => clearInterval(timer);
   }, [seconds, paymentMethod]);
 
-  // Payment complete
-const handlePayment = async () => {
-  try {
-    const currentUser = auth.currentUser;
+  // ================================
+  // PLACE ORDER
+  // ================================
 
-    if (!currentUser) {
-      alert("Please login first 🔐");
-      navigate("/");
-      return;
+  const handlePayment = async () => {
+    try {
+      setLoading(true);
+
+      // Check login
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) {
+        alert("Please login first 🔐");
+        navigate("/");
+        return;
+      }
+
+      // Check cart
+      const cartItems =
+        JSON.parse(localStorage.getItem("cart")) || [];
+
+      if (cartItems.length === 0) {
+        alert("Your cart is empty 🛒");
+        navigate("/cart");
+        return;
+      }
+
+      // Order ID
+      const orderId =
+        localStorage.getItem("orderId") ||
+        "SP" +
+          Date.now()
+            .toString()
+            .slice(-8);
+
+      // Customer name
+      const savedUser =
+        JSON.parse(
+          localStorage.getItem("user")
+        ) || {};
+
+      const customerName =
+        savedUser.fullName ||
+        currentUser.displayName ||
+        "Customer";
+
+      // Total
+      const cartTotal = cartItems.reduce(
+        (total, item) =>
+          total +
+          Number(item.price) *
+            Number(item.quantity || 1),
+        0
+      );
+
+      // ================================
+      // IMPORTANT:
+      // NEW ORDER = PENDING
+      // Admin will confirm it.
+      // ================================
+
+      const newOrder = {
+        orderId: orderId,
+
+        userId: currentUser.uid,
+
+        customerName: customerName,
+
+        customerEmail:
+          currentUser.email || "",
+
+        paymentMethod: paymentMethod,
+
+        items: cartItems,
+
+        total: cartTotal,
+
+        status: "Pending",
+
+        createdAt: serverTimestamp(),
+
+        updatedAt: serverTimestamp(),
+      };
+
+      // ================================
+      // SAVE TO FIRESTORE
+      // ================================
+
+      await setDoc(
+        doc(db, "orders", orderId),
+        newOrder
+      );
+
+      console.log(
+        "Order saved to Firebase ✅",
+        newOrder
+      );
+
+      // ================================
+      // LOCAL STORAGE BACKUP
+      // ================================
+
+      const existingOrders =
+        JSON.parse(
+          localStorage.getItem("orders")
+        ) || [];
+
+      localStorage.setItem(
+        "orders",
+        JSON.stringify([
+          ...existingOrders,
+          {
+            ...newOrder,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ])
+      );
+
+      // Save order ID
+      localStorage.setItem(
+        "orderId",
+        orderId
+      );
+
+      // ================================
+      // CLEAR CART
+      // ================================
+
+      localStorage.removeItem("cart");
+
+      localStorage.removeItem(
+        "cartTotal"
+      );
+
+      // ================================
+      // SUCCESS
+      // ================================
+
+      alert(
+        "Order Placed Successfully 🎉\n\nStatus: Pending"
+      );
+
+      navigate("/order-success");
+    } catch (error) {
+      console.error(
+        "Order Save Error:",
+        error
+      );
+
+      alert(
+        "Order place nahi ho paya ❌\n\n" +
+          error.message
+      );
+    } finally {
+      setLoading(false);
     }
-
-    const cartItems =
-      JSON.parse(localStorage.getItem("cart")) || [];
-
-    if (cartItems.length === 0) {
-      alert("Your cart is empty 🛒");
-      navigate("/cart");
-      return;
-    }
-
-    const customerName =
-      localStorage.getItem("customerName") ||
-      currentUser.displayName ||
-      "Customer";
-
-    const savedPaymentMethod =
-      localStorage.getItem("paymentMethod") ||
-      paymentMethod;
-
-    const orderData = {
-      userId: currentUser.uid,
-
-      customerName: customerName,
-
-      email: currentUser.email || "",
-
-      paymentMethod: savedPaymentMethod,
-
-      items: cartItems,
-
-      total: totalPrice,
-
-      status: "Confirmed",
-
-      date: new Date().toLocaleDateString("en-IN"),
-
-      createdAt: serverTimestamp(),
-    };
-
-    // 🔥 Save order to Firestore
-    const orderRef = await addDoc(
-      collection(db, "orders"),
-      orderData
-    );
-
-    console.log(
-      "Order saved to Firebase:",
-      orderRef.id
-    );
-
-    // LocalStorage orderId for Order Success page
-    localStorage.setItem(
-      "orderId",
-      orderRef.id
-    );
-
-    // Optional local copy
-    localStorage.setItem(
-      "lastOrder",
-      JSON.stringify({
-        ...orderData,
-        orderId: orderRef.id,
-      })
-    );
-
-    // Cart clear
-    localStorage.removeItem("cart");
-    localStorage.removeItem("cartTotal");
-
-    alert("Payment Successful 🎉");
-
-    navigate("/order-success");
-
-  } catch (error) {
-    console.error(
-      "Firebase Order Save Error:",
-      error
-    );
-
-    alert(
-      `Order save nahi ho paya ❌\n${error.code || ""}`
-    );
-  }
-};
+  };
 
   return (
     <div className="container my-5">
 
-      {/* Header */}
+      {/* HEADER */}
+
       <div className="d-flex justify-content-between align-items-center mb-4">
 
         <div>
@@ -168,7 +243,8 @@ const handlePayment = async () => {
 
       <div className="row">
 
-        {/* LEFT SIDE */}
+        {/* LEFT */}
+
         <div className="col-lg-8">
 
           <div className="card shadow p-4">
@@ -178,6 +254,7 @@ const handlePayment = async () => {
             </h4>
 
             {/* COD */}
+
             <div className="border rounded p-3 mb-3">
 
               <div className="form-check">
@@ -187,9 +264,13 @@ const handlePayment = async () => {
                   type="radio"
                   name="paymentMethod"
                   value="COD"
-                  checked={paymentMethod === "COD"}
+                  checked={
+                    paymentMethod === "COD"
+                  }
                   onChange={(e) =>
-                    setPaymentMethod(e.target.value)
+                    setPaymentMethod(
+                      e.target.value
+                    )
                   }
                 />
 
@@ -206,6 +287,7 @@ const handlePayment = async () => {
             </div>
 
             {/* UPI */}
+
             <div className="border rounded p-3 mb-3">
 
               <div className="form-check">
@@ -215,9 +297,13 @@ const handlePayment = async () => {
                   type="radio"
                   name="paymentMethod"
                   value="UPI"
-                  checked={paymentMethod === "UPI"}
+                  checked={
+                    paymentMethod === "UPI"
+                  }
                   onChange={(e) =>
-                    setPaymentMethod(e.target.value)
+                    setPaymentMethod(
+                      e.target.value
+                    )
                   }
                 />
 
@@ -225,7 +311,8 @@ const handlePayment = async () => {
 
                   <FaMobileAlt className="me-2 text-primary" />
 
-                  UPI / Google Pay / PhonePe / Paytm
+                  UPI / Google Pay /
+                  PhonePe / Paytm
 
                 </label>
 
@@ -234,6 +321,7 @@ const handlePayment = async () => {
             </div>
 
             {/* CARD */}
+
             <div className="border rounded p-3">
 
               <div className="form-check">
@@ -243,9 +331,13 @@ const handlePayment = async () => {
                   type="radio"
                   name="paymentMethod"
                   value="CARD"
-                  checked={paymentMethod === "CARD"}
+                  checked={
+                    paymentMethod === "CARD"
+                  }
                   onChange={(e) =>
-                    setPaymentMethod(e.target.value)
+                    setPaymentMethod(
+                      e.target.value
+                    )
                   }
                 />
 
@@ -262,6 +354,7 @@ const handlePayment = async () => {
             </div>
 
             {/* CARD FORM */}
+
             {paymentMethod === "CARD" && (
               <div className="mt-4">
 
@@ -280,19 +373,23 @@ const handlePayment = async () => {
                 <div className="row">
 
                   <div className="col">
+
                     <input
                       type="text"
                       className="form-control"
                       placeholder="MM/YY"
                     />
+
                   </div>
 
                   <div className="col">
+
                     <input
                       type="password"
                       className="form-control"
                       placeholder="CVV"
                     />
+
                   </div>
 
                 </div>
@@ -300,7 +397,8 @@ const handlePayment = async () => {
               </div>
             )}
 
-            {/* UPI QR */}
+            {/* UPI */}
+
             {paymentMethod === "UPI" && (
               <div className="text-center mt-4">
 
@@ -324,7 +422,10 @@ const handlePayment = async () => {
                 </h5>
 
                 <h3 className="text-success mt-3">
-                  ₹{totalPrice.toLocaleString("en-IN")}
+                  ₹
+                  {totalPrice.toLocaleString(
+                    "en-IN"
+                  )}
                 </h3>
 
                 <div className="alert alert-warning mt-4">
@@ -342,13 +443,6 @@ const handlePayment = async () => {
 
                 </div>
 
-                <button
-                  className="btn btn-success btn-lg w-100"
-                  onClick={handlePayment}
-                >
-                  Place Order
-                </button>
-
               </div>
             )}
 
@@ -356,7 +450,8 @@ const handlePayment = async () => {
 
         </div>
 
-        {/* RIGHT SIDE */}
+        {/* RIGHT */}
+
         <div className="col-lg-4">
 
           <div className="card shadow p-4 sticky-top">
@@ -368,36 +463,70 @@ const handlePayment = async () => {
             <hr />
 
             <div className="d-flex justify-content-between">
+
               <span>Items</span>
-              <span>{cart.length}</span>
+
+              <span>
+                {cart.length}
+              </span>
+
             </div>
 
             <div className="d-flex justify-content-between mt-3">
+
               <span>Total</span>
 
               <strong>
-                ₹{totalPrice.toLocaleString("en-IN")}
+                ₹
+                {totalPrice.toLocaleString(
+                  "en-IN"
+                )}
               </strong>
+
             </div>
 
             <hr />
 
             <div className="d-flex justify-content-between fs-5 fw-bold">
-              <span>Grand Total</span>
+
+              <span>
+                Grand Total
+              </span>
 
               <span className="text-success">
-                ₹{totalPrice.toLocaleString("en-IN")}
+                ₹
+                {totalPrice.toLocaleString(
+                  "en-IN"
+                )}
               </span>
+
             </div>
+
+            {/* PLACE ORDER */}
 
             <button
               className="btn btn-success w-100 mt-4"
               onClick={handlePayment}
+              disabled={loading}
             >
-              {paymentMethod === "COD"
+              {loading
+                ? "Placing Order..."
+                : paymentMethod === "COD"
                 ? "Place Order"
-                : "Pay Now"}
+                : "I Have Paid"}
             </button>
+
+            {/* STATUS INFO */}
+
+            <div className="alert alert-info mt-3 mb-0">
+
+              <small>
+                ℹ️ Your order will first be
+                marked as <strong>Pending</strong>.
+                Admin will confirm your order.
+              </small>
+
+            </div>
 
           </div>
 

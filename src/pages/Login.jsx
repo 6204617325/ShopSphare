@@ -13,16 +13,19 @@ import SocialButton from "../components/SocialButton";
 
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaLinkedin } from "react-icons/fa6";
+
 import { useNavigate } from "react-router-dom";
+
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   GithubAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
-import { auth } from "../firebase";
+
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+
+import { auth, db } from "../firebase";
 
 function Login() {
   const navigate = useNavigate();
@@ -35,6 +38,7 @@ function Login() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
+  // Remember Email
   useEffect(() => {
     const savedEmail = localStorage.getItem("email");
 
@@ -43,6 +47,33 @@ function Login() {
       setRememberMe(true);
     }
   }, []);
+
+  // =========================================
+  // CHECK ADMIN
+  // =========================================
+
+  async function checkAdmin(user) {
+    const userRef = doc(db, "users", user.uid);
+
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+
+      console.log("Firestore User:", userData);
+      console.log("User Role:", userData.role);
+
+      if (userData.role === "admin") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // =========================================
+  // EMAIL + PASSWORD LOGIN
+  // =========================================
 
   async function handleLogin() {
     let valid = true;
@@ -72,18 +103,37 @@ function Login() {
     try {
       setLoading(true);
 
-      await signInWithEmailAndPassword(
+      // Firebase Login
+      const result = await signInWithEmailAndPassword(
         auth,
         email.trim(),
-        password
+        password,
       );
 
+      const user = result.user;
+
+      console.log("Logged in User:", user);
+      console.log("UID:", user.uid);
+
+      // Remember Me
       if (rememberMe) {
         localStorage.setItem("email", email.trim());
       } else {
         localStorage.removeItem("email");
       }
 
+      // Check Admin
+      const isAdmin = await checkAdmin(user);
+
+      if (isAdmin) {
+        alert("Welcome Admin 👑");
+
+        navigate("/admin");
+
+        return;
+      }
+
+      // Normal User
       alert("Login Successful 🎉");
 
       navigate("/home");
@@ -103,84 +153,157 @@ function Login() {
       setLoading(false);
     }
   }
-async function handleGoogleLogin() {
-  try {
-    setLoading(true);
 
-    const provider = new GoogleAuthProvider();
+  // =========================================
+  // GOOGLE LOGIN
+  // =========================================
 
-    const result = await signInWithPopup(auth, provider);
+  async function handleGoogleLogin() {
+    try {
+      setLoading(true);
 
-    const user = result.user;
-    await setDoc(
-  doc(db, "users", user.uid),
-  {
-    uid: user.uid,
-    name: user.displayName || "",
-    email: user.email || "",
-    photoURL: user.photoURL || "",
-    provider: "google",
-    updatedAt: serverTimestamp(),
-  },
-  { merge: true }
-);
+      const provider = new GoogleAuthProvider();
 
-navigate("/home");
+      const result = await signInWithPopup(auth, provider);
 
-    console.log("Google User:", user);
-    console.log("Name:", user.displayName);
-    console.log("Email:", user.email);
-    console.log("Photo:", user.photoURL);
+      const user = result.user;
 
-    alert(`Welcome ${user.displayName} 🎉`);
+      console.log("Google User:", user);
 
-    navigate("/home");
-  } catch (error) {
-    console.error("Google Login Error:", error);
+      // Check existing user
+      const userRef = doc(db, "users", user.uid);
 
-    alert(error.message);
-  } finally {
-    setLoading(false);
+      const userSnap = await getDoc(userRef);
+
+      // If user does not exist,
+      // create user document
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName || "",
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+          provider: "google",
+          role: "user",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      } else {
+        // Only update basic information.
+        // IMPORTANT: role is NOT changed.
+        await setDoc(
+          userRef,
+          {
+            uid: user.uid,
+            name: user.displayName || "",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+            provider: "google",
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
+
+      // Check Admin
+      const isAdmin = await checkAdmin(user);
+
+      if (isAdmin) {
+        alert(`Welcome Admin ${user.displayName || ""} 👑`);
+
+        navigate("/admin");
+
+        return;
+      }
+
+      // Normal User
+      alert(`Welcome ${user.displayName || "User"} 🎉`);
+
+      navigate("/home");
+    } catch (error) {
+      console.error("Google Login Error:", error);
+
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
-}
-async function handleGithubLogin() {
-  try {
-    setLoading(true);
 
-    const provider = new GithubAuthProvider();
+  // =========================================
+  // GITHUB LOGIN
+  // =========================================
 
-    const result = await signInWithPopup(auth, provider);
+  async function handleGithubLogin() {
+    try {
+      setLoading(true);
 
-    const user = result.user;
-    await setDoc(
-  doc(db, "users", user.uid),
-  {
-    uid: user.uid,
-    name: user.displayName || "",
-    email: user.email || "",
-    photoURL: user.photoURL || "",
-    provider: "github",
-    updatedAt: serverTimestamp(),
-  },
-  { merge: true }
-);
+      const provider = new GithubAuthProvider();
 
-    console.log("GitHub User:", user);
-    console.log("Name:", user.displayName);
-    console.log("Email:", user.email);
-    console.log("Photo:", user.photoURL);
+      const result = await signInWithPopup(auth, provider);
 
-    alert(`Welcome ${user.displayName || "User"} 🎉`);
+      const user = result.user;
 
-    navigate("/home");
-  } catch (error) {
-    console.error("GitHub Login Error:", error);
+      console.log("GitHub User:", user);
 
-    alert(error.message);
-  } finally {
-    setLoading(false);
+      const userRef = doc(db, "users", user.uid);
+
+      const userSnap = await getDoc(userRef);
+
+      // New GitHub user
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName || user.email || "User",
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+          provider: "github",
+          role: "user",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      } else {
+        // Do NOT change role
+        await setDoc(
+          userRef,
+          {
+            uid: user.uid,
+            name: user.displayName || user.email || "User",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+            provider: "github",
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
+
+      // Check Admin
+      const isAdmin = await checkAdmin(user);
+
+      if (isAdmin) {
+        alert("Welcome Admin 👑");
+
+        navigate("/admin");
+
+        return;
+      }
+
+      // Normal User
+      alert(`Welcome ${user.displayName || "User"} 🎉`);
+
+      navigate("/home");
+    } catch (error) {
+      console.error("GitHub Login Error:", error);
+
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
-}
+
+  // =========================================
+  // UI
+  // =========================================
 
   return (
     <div>
@@ -226,10 +349,7 @@ async function handleGithubLogin() {
         onClick={handleGithubLogin}
       />
 
-      <SocialButton
-        text="Continue with LinkedIn"
-        icon={<FaLinkedin />}
-      />
+      <SocialButton text="Continue with LinkedIn" icon={<FaLinkedin />} />
     </div>
   );
 }
