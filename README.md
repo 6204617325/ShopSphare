@@ -1,16 +1,50 @@
-# React + Vite
+# 🛍️ ShopSphere
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ShopSphere is a modern e-commerce web application built with React, Vite, Bootstrap and Firebase.
 
-Currently, two official plugins are available:
+It provides a complete shopping experience for customers along with a secure Admin Dashboard for managing orders.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 👤 User Features
 
-## Expanding the ESLint configuration
+- 🔐 Firebase Email/Password Authentication
+- 🔑 Google Login
+- 🐙 GitHub Login
+- 👤 User Profile
+- 🏠 Saved User Information
+- 🛒 Shopping Cart
+- ❤️ Wishlist
+- 📦 My Orders
+- 🔎 Product Browsing
+- 💳 Payment Page
+- 📱 UPI Payment Interface
+- 💵 Cash on Delivery
+- 📍 Checkout
+- 🎉 Order Success Page
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 👑 Admin Features
+
+ShopSphere also includes a separate Admin Dashboard.
+
+### Admin can:
+
+- 📊 View total orders
+- 📦 View customer orders
+- 💰 View total sales
+- ✅ View confirmed orders
+- ⚙️ View processing orders
+- 🚚 View shipped orders
+- 🎉 View delivered orders
+- 🔐 Access restricted to admin users only
+
+Admin access is controlled using a Firebase Firestore `role` field.
+
+Example:
+
+```text
+role: "admin"

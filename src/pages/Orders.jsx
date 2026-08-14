@@ -6,6 +6,7 @@ import {
   query,
   where,
   doc,
+  getDoc,
   updateDoc,
 } from "firebase/firestore";
 
@@ -70,34 +71,71 @@ function Orders() {
   // =========================
   // CANCEL ORDER
   // =========================
-  const cancelOrder = async (orderId) => {
-    const confirmCancel = window.confirm(
-      "Are you sure you want to cancel this order?"
-    );
+ const cancelOrder = async (orderId) => {
+  const confirmCancel = window.confirm(
+    "Are you sure you want to cancel this order?"
+  );
 
-    if (!confirmCancel) {
+  if (!confirmCancel) {
+    return;
+  }
+
+  try {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      alert("Please login first 🔐");
       return;
     }
 
-    try {
-      const currentUser = auth.currentUser;
+    // Order reference
+    const orderRef = doc(db, "orders", orderId);
 
-      if (!currentUser) {
-        alert("Please login first 🔐");
-        return;
-      }
+    // Current order Firebase se read karo
+    const orderSnapshot = await getDoc(orderRef);
 
-      await updateDoc(doc(db, "orders", orderId), {
-        status: "Cancelled",
-      });
-
-      alert("Order cancelled successfully ❌");
-    } catch (error) {
-      console.error("Cancel Order Error:", error);
-      alert("Order cancel nahi ho paya ❌");
+    if (!orderSnapshot.exists()) {
+      alert("Order not found ❌");
+      return;
     }
-  };
 
+    const orderData = orderSnapshot.data();
+
+    // Security: sirf apna order cancel kar sakta hai
+    if (orderData.userId !== currentUser.uid) {
+      alert("You cannot cancel this order ❌");
+      return;
+    }
+
+    // Delivered order cancel nahi ho sakta
+    if (orderData.status === "Delivered") {
+      alert("Delivered order cannot be cancelled ❌");
+      return;
+    }
+
+    // Already cancelled
+    if (orderData.status === "Cancelled") {
+      alert("This order is already cancelled ❌");
+      return;
+    }
+
+    // Cancel order
+    await updateDoc(orderRef, {
+      status: "Cancelled",
+      cancelledAt: new Date(),
+    });
+
+    alert("Order cancelled successfully ❌");
+
+  } catch (error) {
+    console.error("Cancel Order Error:", error);
+
+    alert(
+      "Order cancel nahi ho paya ❌\n\n" +
+      error.message
+    );
+  }
+};
   // =========================
   // STATUS TEXT
   // =========================

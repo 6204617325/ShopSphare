@@ -298,3 +298,222 @@ body {
   color: #adb5bd;
   font-size: 16px;
 }
+
+/* =========================================
+   📱 MOBILE RESPONSIVE FIX
+   ========================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  min-width: 0;
+}
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 768px) {
+
+  /* Bootstrap containers */
+  .container,
+  .container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  /* ===============================
+     NAVBAR
+     =============================== */
+
+  .shop-navbar {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden;
+  }
+
+  .shop-navbar-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 8px 10px !important;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px !important;
+
+    flex-wrap: nowrap !important;
+  }
+
+  .navbar-brand {
+    min-width: 0 !important;
+  }
+
+  /* ===============================
+     CATEGORY BAR
+     =============================== */
+
+  .category-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .category-container {
+    width: max-content !important;
+    min-width: 100%;
+
+    justify-content: flex-start !important;
+
+    padding: 8px 10px !important;
+
+    white-space: nowrap;
+  }
+
+  .category-button {
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* ===============================
+     HERO
+     =============================== */
+
+  .home-page,
+  .home-hero {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .home-hero img {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* ===============================
+     PRODUCTS
+     =============================== */
+
+  .home-products {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 25px 12px !important;
+  }
+
+  .products-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    display: grid !important;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
+    gap: 12px !important;
+  }
+
+  .products-grid > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ===============================
+     CARDS
+     =============================== */
+
+  .card {
+    max-width: 100% !important;
+  }
+
+  /* Product images */
+  .card img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* ===============================
+     HEADINGS
+     =============================== */
+
+  .home-section-title {
+    font-size: 20px;
+  }
+}
+
+
+/* =========================================
+   VERY SMALL PHONES
+   ========================================= */
+
+@media (max-width: 400px) {
+
+  .shop-navbar-inner {
+    padding: 6px 8px !important;
+    gap: 5px !important;
+  }
+
+  .home-products {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .category-button {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-grid img {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+  }
+
+  .products-grid .card-body {
+    padding: 8px;
+  }
+
+  .products-grid .card-title {
+    font-size: 14px;
+  }
+
+  .products-grid .card-text {
+    font-size: 13px;
+  }
+
+  .products-grid button {
+    font-size: 12px;
+    padding: 7px 8px;
+  }
+}
