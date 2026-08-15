@@ -306,50 +306,130 @@ function Login() {
   // =========================================
 
   return (
-    <div>
-      <Logo />
+    <div className="login-page-wrapper">
 
-      <Input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        error={emailError}
-      />
+      {/* Animated background orbs */}
+      <div className="login-orb login-orb-1" />
+      <div className="login-orb login-orb-2" />
+      <div className="login-orb login-orb-3" />
 
-      <PasswordInput
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        error={passwordError}
-      />
+      {/* Login Card */}
+      <div className="login-card-container">
+        <div className="login-card">
 
-      <CheckBox
-        label="Remember Me"
-        checked={rememberMe}
-        onChange={(e) => setRememberMe(e.target.checked)}
-      />
+          {/* Header */}
+          <div className="login-card-header">
+            <div className="login-logo-icon">🛍</div>
+            <h1 className="login-title">ShopSphere</h1>
+            <p className="login-subtitle">Welcome back! Sign in to continue</p>
+          </div>
 
-      <ForgetPassword />
+          {/* Form Body */}
+          <div className="login-form-body">
 
-      <Button
-        text={loading ? "Loading..." : "Login"}
-        onClick={handleLogin}
-        disabled={!email || !password || loading}
-      />
+            {/* Email Field */}
+            <div className="login-field">
+              <label className="login-label">Email Address</label>
+              <div className="login-input-wrapper">
+                <span className="login-input-icon">✉️</span>
+                <input
+                  type="email"
+                  className={`login-input ${emailError ? "login-input-error" : ""}`}
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              {emailError && <p className="login-error-msg">{emailError}</p>}
+            </div>
 
-      <Divider />
+            {/* Password Field */}
+            <div className="login-field">
+              <label className="login-label">Password</label>
+              <PasswordInput
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={passwordError}
+              />
+            </div>
 
-      <SocialButton
-        text={loading ? "Signing in..." : "Continue with Google"}
-        icon={<FcGoogle />}
-        onClick={handleGoogleLogin}
-      />
+            {/* Remember Me + Forgot */}
+            <div className="login-row-flex">
+              <label className="login-remember">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="login-checkbox"
+                />
+                <span>Remember me</span>
+              </label>
+              <ForgetPassword />
+            </div>
 
-      <SocialButton
-        text="Continue with GitHub"
-        icon={<FaGithub />}
-        onClick={handleGithubLogin}
-      />
+            {/* Login Button */}
+            <button
+              className="login-btn-primary"
+              onClick={handleLogin}
+              disabled={!email || !password || loading}
+            >
+              {loading ? (
+                <span className="login-spinner" />
+              ) : (
+                "Sign In →"
+              )}
+            </button>
 
-      <SocialButton text="Continue with LinkedIn" icon={<FaLinkedin />} />
+            {/* Divider */}
+            <div className="login-divider">
+              <span className="login-divider-line" />
+              <span className="login-divider-text">or continue with</span>
+              <span className="login-divider-line" />
+            </div>
+
+            {/* Social Buttons */}
+            <div className="login-social-grid">
+              <button
+                className="login-social-btn"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                title="Continue with Google"
+              >
+                <FcGoogle size={20} />
+                <span>Google</span>
+              </button>
+
+              <button
+                className="login-social-btn"
+                onClick={handleGithubLogin}
+                disabled={loading}
+                title="Continue with GitHub"
+              >
+                <FaGithub size={18} />
+                <span>GitHub</span>
+              </button>
+
+              <button
+                className="login-social-btn"
+                disabled={true}
+                title="LinkedIn (Coming Soon)"
+              >
+                <FaLinkedin size={18} style={{ color: "#0A66C2" }} />
+                <span>LinkedIn</span>
+              </button>
+            </div>
+
+          </div>
+
+          {/* Footer note */}
+          <p className="login-footer-note">
+            By signing in, you agree to our{" "}
+            <span className="login-link">Terms of Service</span> &{" "}
+            <span className="login-link">Privacy Policy</span>
+          </p>
+
+        </div>
+      </div>
     </div>
   );
 }

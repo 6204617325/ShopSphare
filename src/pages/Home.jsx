@@ -7,8 +7,7 @@ import Footer from "../components/Footer";
 import CategoryBar from "../components/CategoryBar";
 import ProductDetails from "../components/ProductDetails";
 
-function Home({ cart, setCart }) {
-  const [wishlist, setWishlist] = useState([]);
+function Home({ cart, setCart, wishlist, setWishlist }) {
   const [search, setSearch] = useState("");
   const [selectedProduct, setSelectedProduct] =
     useState(null);
@@ -71,6 +70,7 @@ function Home({ cart, setCart }) {
               setCart={setCart}
               wishlist={wishlist}
               setWishlist={setWishlist}
+              onClose={() => setSelectedProduct(null)}
             />
           )}
 

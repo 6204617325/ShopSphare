@@ -234,6 +234,8 @@ function App() {
             <Home
               cart={cart}
               setCart={setCart}
+              wishlist={wishlist}
+              setWishlist={setWishlist}
             />
           }
         />

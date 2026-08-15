@@ -1,4 +1,4 @@
-import { FaHeart } from "react-icons/fa";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 function ProductCard({
   image,
@@ -7,75 +7,82 @@ function ProductCard({
   oldPrice,
   onAddToCart,
   product,
-  wishlist,
+  wishlist = [],
   setWishlist,
 }) {
+  const isWishlisted = wishlist.some((item) => item.id === product.id);
 
-  const addToWishlist = () => {
-
-    const exists = wishlist.find(
-      (item) => item.id === product.id
-    );
-
-    if (!exists) {
-      setWishlist([
-        ...wishlist,
-        product,
-      ]);
+  const handleWishlistClick = (e) => {
+    e.stopPropagation();
+    if (isWishlisted) {
+      setWishlist(wishlist.filter((item) => item.id !== product.id));
+    } else {
+      setWishlist([...wishlist, product]);
     }
+  };
 
+  const handleAddToCartClick = (e) => {
+    e.stopPropagation();
+    onAddToCart();
   };
 
   return (
-
-    <div className="card shadow-sm p-3" style={{ width: "220px" }}>
-
+    <div className="card product-card-custom shadow-sm p-2 pb-3 h-100">
       {/* ❤️ Wishlist Button */}
-      <div className="text-end mb-2">
-
-        <FaHeart
-          size={22}
-          className="text-danger"
-          style={{ cursor: "pointer" }}
-          onClick={addToWishlist}
-        />
-
+      <div className="text-end mb-1">
+        {isWishlisted ? (
+          <FaHeart
+            size={18}
+            className="text-danger"
+            style={{ cursor: "pointer" }}
+            onClick={handleWishlistClick}
+          />
+        ) : (
+          <FaRegHeart
+            size={18}
+            className="text-muted hover-danger"
+            style={{ cursor: "pointer" }}
+            onClick={handleWishlistClick}
+          />
+        )}
       </div>
 
       {/* Product Image */}
-      <img
-        src={image}
-        alt={title}
-        className="card-img-top"
-        style={{ height: "180px", objectFit: "contain" }}
-      />
+      <div className="product-image-container">
+        <img
+          src={image}
+          alt={title}
+          className="card-img-top product-card-img"
+        />
+      </div>
 
       {/* Product Details */}
-      <div className="card-body text-center">
+      <div className="card-body p-2 d-flex flex-column justify-content-between text-center">
+        <div>
+          <h6 className="product-card-title mb-1 text-truncate-2" title={title}>
+            {title}
+          </h6>
 
-        <h6>{title}</h6>
-
-        <h5 className="text-success">
-          ₹{price}
-        </h5>
-
-        <small className="text-muted text-decoration-line-through">
-          ₹{oldPrice}
-        </small>
-
-        <br />
+          <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <span className="text-success fw-bold product-card-price">
+              ₹{price}
+            </span>
+            {oldPrice && (
+              <span className="text-muted text-decoration-line-through small-old-price">
+                ₹{oldPrice}
+              </span>
+            )}
+          </div>
+        </div>
 
         <button
-          className="btn btn-primary mt-3 w-100"
-          onClick={onAddToCart}
+          className="btn btn-primary btn-sm product-card-btn w-100 mt-2"
+          onClick={handleAddToCartClick}
         >
           Add to Cart
         </button>
-
       </div>
-
     </div>
-
   );
 }
 

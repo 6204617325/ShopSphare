@@ -51,7 +51,7 @@ function DealsSection({
 
   return (
     <>
-      <h2 className="mb-4 fw-bold">
+      <h2 className="mb-4 fw-bold home-section-title">
         🔥 Deals of the Day
       </h2>
 
@@ -63,15 +63,16 @@ function DealsSection({
           </p>
         </div>
       ) : (
-        <div className="row">
+        <div className="row g-2 g-md-3 g-lg-4">
           {filteredProducts.map((product) => (
             <div
-              className="col-md-3 mb-4"
+              className="col-6 col-sm-6 col-md-4 col-lg-3 mb-2 mb-md-3"
               key={product.id}
             >
               <div
                 onClick={() => setSelectedProduct(product)}
                 style={{ cursor: "pointer" }}
+                className="h-100 d-block"
               >
                 <ProductCard
                   image={product.image}
