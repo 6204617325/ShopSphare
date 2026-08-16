@@ -18,7 +18,7 @@
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   transition: 0.3s;
 }
 
@@ -42,20 +42,20 @@
 }
 
 /* Navebar ka css hai  */
-.navbar{
-    height:70px;
+.navbar {
+  height: 70px;
 }
 
-.navbar-brand{
-    min-width:220px;
+.navbar-brand {
+  min-width: 220px;
 }
 
-.form-control{
-    height:40px;
+.form-control {
+  height: 40px;
 }
 
-.dropdown-toggle::after{
-    margin-left:10px;
+.dropdown-toggle::after {
+  margin-left: 10px;
 }
 
 /* ==========================================
@@ -77,7 +77,8 @@
 .shop-navbar-inner {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;          /* allows search to drop to row 2 on mobile */
+  flex-wrap: wrap;
+  /* allows search to drop to row 2 on mobile */
   gap: 12px 16px;
   padding: 10px 0;
 }
@@ -90,7 +91,8 @@
 
 /* Search — row 1 middle on desktop, row 2 full-width on mobile */
 .navbar-search-row {
-  flex: 1;                  /* grows to fill middle space on desktop */
+  flex: 1;
+  /* grows to fill middle space on desktop */
   min-width: 160px;
   max-width: 460px;
   order: 2;
@@ -136,13 +138,15 @@
   /* Icons jump to right end of row 1 */
   .navbar-icons {
     order: 2;
-    margin-left: auto;       /* push icons to far right */
+    margin-left: auto;
+    /* push icons to far right */
   }
 
   /* Search drops to row 2, full width */
   .navbar-search-row {
     order: 3;
-    flex-basis: 100%;        /* forces a new row */
+    flex-basis: 100%;
+    /* forces a new row */
     max-width: 100%;
     min-width: 0;
   }
@@ -324,7 +328,7 @@ body {
 }
 
 /* Product card */
-.products-grid > * {
+.products-grid>* {
   min-width: 0;
 }
 
@@ -562,7 +566,7 @@ body {
     gap: 12px !important;
   }
 
-  .products-grid > * {
+  .products-grid>* {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -696,6 +700,7 @@ body {
 .hover-danger {
   transition: color 0.2s ease, transform 0.2s ease;
 }
+
 .hover-danger:hover {
   color: #dc3545 !important;
   transform: scale(1.15);
@@ -707,7 +712,8 @@ body {
   font-weight: 600;
   color: #212529;
   line-height: 1.4;
-  height: 38px; /* Restrict height for 2-line consistency */
+  height: 38px;
+  /* Restrict height for 2-line consistency */
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -749,7 +755,8 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(15, 23, 42, 0.45); /* Modern Slate glass overlay */
+  background: rgba(15, 23, 42, 0.45);
+  /* Modern Slate glass overlay */
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 1050;
@@ -821,6 +828,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -831,6 +839,7 @@ body {
     transform: scale(0.92);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -841,6 +850,7 @@ body {
   from {
     transform: translateY(100%);
   }
+
   to {
     transform: translateY(0);
   }
@@ -848,21 +858,22 @@ body {
 
 /* --- 3. Responsive Styling for Mobile Viewport --- */
 @media (max-width: 768px) {
+
   /* Smaller Image height on mobile */
   .product-image-container {
     height: 110px;
   }
-  
+
   .product-card-title {
     font-size: 11.5px;
     height: 32px;
     margin-top: 2px;
   }
-  
+
   .product-card-price {
     font-size: 13px;
   }
-  
+
   .small-old-price {
     font-size: 10px;
   }
@@ -875,33 +886,37 @@ body {
 
   /* Make Modal slide up from bottom on mobile (Bottom-sheet drawer feel) */
   .modal-backdrop-custom {
-    align-items: flex-end; /* bottom-align */
+    align-items: flex-end;
+    /* bottom-align */
   }
 
   .modal-content-custom {
     width: 100%;
     max-width: 100%;
-    border-radius: 24px 24px 0 0 !important; /* round top corners only */
+    border-radius: 24px 24px 0 0 !important;
+    /* round top corners only */
     max-height: 85vh;
     animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     margin-bottom: 0;
   }
-  
+
   .modal-close-btn {
     top: 12px;
     right: 12px;
   }
-  
+
   .modal-product-img {
     max-height: 180px;
     margin-bottom: 12px;
   }
-  
+
   .modal-product-title {
     font-size: 18px;
   }
-  
+
   .modal-product-desc {
     font-size: 13px;
   }
 }
+
+/* TEST UPDATE */
